@@ -17,10 +17,13 @@ public class TodoService {
     }
 
     public Todo createTodo(Todo todo){
-//        verifyExistTodo(todo.getTodoOrder());
-
-
-        return repository.save(todo);
+        if(verifyExistTodo(todo.getTodoOrder())) {
+            todo.setTodoId(repository.findByTodoOrder(todo.getTodoOrder()).get().getTodoId());
+            return updateTodo(todo);
+        }
+        else return repository.save(todo);
+//        return verifyExistTodo(todo.getTodoOrder()) ? updateTodo(todo) : repository.save(todo);
+//        return repository.save(todo);
     }
     public Todo updateTodo(Todo todo){
         Todo findTodo = findVerifiedTodo(todo.getTodoId());
@@ -41,11 +44,20 @@ public class TodoService {
         repository.delete(findVerifiedTodo(todoId));
     }
 
-    /////////////////////////////////////////////////////
-    private void verifyExistTodo(int todo_order) {
-        Optional<Todo> optionalTodo = repository.findByTodoOrder(todo_order);
-        if(optionalTodo.isPresent()) throw new BusinessLogicException(); //Todo : 예외의 인자 완성하기!
+    //---------------------------------------------
+
+    // private boolean verifyExistTodo(int todoOrder) 방식
+    private boolean verifyExistTodo(int todoOrder) {
+        Optional<Todo> optionalTodo = repository.findByTodoOrder(todoOrder);
+        return optionalTodo.isPresent(); //Todo : 예외의 인자 완성하기!
     }
+    // verifyExistTodo(Todo todo) 방식
+//    private boolean verifyExistTodo(Todo todo) {
+//        Optional<Todo> optionalTodo = repository.findByTodoOrder(todo.getTodoOrder());
+//        boolean result = optionalTodo.isPresent(); //Todo : 예외의 인자 완성하기!
+//        if(result == true) todo.setTodoId(optionalTodo.get().getTodoId());
+//        return result;
+//    }
     private Todo findVerifiedTodo(long todoId) {
         Optional<Todo> optionalTodo = repository.findById(todoId);
         Todo todo = optionalTodo.orElseThrow(()->new RuntimeException());  //Todo : 예외의 인자 완성하기!
